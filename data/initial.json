@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "revision": 0,
+  "organizations": [
+    {
+      "id": "65f6a62f-e22d-a513-4f42-cbfae1dd1fe2",
+      "code": "SYN-ORG-CENTRAL",
+      "displayName": "Synthetic Central Sangha Unit",
+      "type": "SANGHA_UNIT",
+      "parentId": null,
+      "isSynthetic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "f743c004-e956-83a2-8877-ba83ce350fd7",
+      "code": "SYN-ORG-EDU-01",
+      "displayName": "Synthetic Education Unit 01",
+      "type": "EDUCATION_UNIT",
+      "parentId": "65f6a62f-e22d-a513-4f42-cbfae1dd1fe2",
+      "isSynthetic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "1629d6b8-8964-9eb0-6b98-e773f123a1ee",
+      "code": "SYN-ORG-EXAM-01",
+      "displayName": "Synthetic Exam Centre Unit 01",
+      "type": "EXAMINATION_UNIT",
+      "parentId": "f743c004-e956-83a2-8877-ba83ce350fd7",
+      "isSynthetic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "people": [
+    {
+      "id": "9c362bce-6ab3-c5ec-9f6c-e40ded004a2c",
+      "displayName": "Synthetic Person Acting",
+      "isSynthetic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "13a7da2e-5e23-c797-4f10-0b308ceda86f",
+      "displayName": "Synthetic Person Appointed",
+      "isSynthetic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "assignments": [
+    {
+      "id": "9682fc9c-e87b-7cdd-8ba9-3a2fac2e1067",
+      "positionId": "f57428c4-f674-37f5-8787-f6c48bc50b92",
+      "personId": "9c362bce-6ab3-c5ec-9f6c-e40ded004a2c",
+      "state": "ACTING",
+      "effectiveFrom": "2026-02-01T00:00:00Z",
+      "effectiveTo": "2026-03-31T23:59:59Z",
+      "documentRecordId": "SYN-ACTING-01",
+      "isSynthetic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "a2e4b8f6-2334-63bd-830e-16e3eb27e7a0",
+      "positionId": "f57428c4-f674-37f5-8787-f6c48bc50b92",
+      "personId": "13a7da2e-5e23-c797-4f10-0b308ceda86f",
+      "state": "APPOINTED",
+      "effectiveFrom": "2026-04-01T00:00:00Z",
+      "effectiveTo": "2026-06-30T23:59:59Z",
+      "documentRecordId": "SYN-APPOINTED-01",
+      "isSynthetic": true,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "positionDefinitions": [
+    {
+      "id": "f57428c4-f674-37f5-8787-f6c48bc50b92",
+      "organizationId": "f743c004-e956-83a2-8877-ba83ce350fd7",
+      "title": "Synthetic Education Lead"
+    }
+  ],
+  "orgHistory": [],
+  "audit": [],
+  "outbox": [],
+  "assignmentEvents": [],
+  "release": {
+    "version": "SYN-RELEASE-1",
+    "released": true,
+    "entries": [
+      {
+        "publicEntryId": "SYN-PUBLIC-1",
+        "organizationName": "Synthetic Learning Office",
+        "organizationType": "SYNTHETIC_OFFICE",
+        "positionTitle": "Synthetic Head",
+        "releasedAssignments": [
+          {
+            "displayName": "Synthetic Former Holder",
+            "effectiveFrom": "2025-01-01T00:00:00Z",
+            "effectiveTo": "2026-01-01T00:00:00Z"
+          },
+          {
+            "displayName": "Synthetic Current Holder",
+            "effectiveFrom": "2026-01-01T00:00:00Z",
+            "effectiveTo": null
+          }
+        ]
+      }
+    ]
+  }
+}
