@@ -1,0 +1,152 @@
+[
+  {
+    "file": "tests/audit/tamper-completeness.test.mjs",
+    "exit": 0,
+    "output": "audit tamper/completeness tests passed (maker-checker, redaction, required actions, hash-chain detection)",
+    "error": ""
+  },
+  {
+    "file": "tests/auth/negative-access.test.mjs",
+    "exit": 0,
+    "output": "auth negative tests passed (login 401, expiry, cross-scope 403, maker-checker 403, MFA 403, mutation order)",
+    "error": ""
+  },
+  {
+    "file": "tests/documents/malware-expiry.test.mjs",
+    "exit": 0,
+    "output": "document malware/expiry tests passed (private bucket, quarantine, versioning, authorization, signed URL expiry)",
+    "error": ""
+  },
+  {
+    "file": "tests/education/role-date.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at createEducationUnit (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/education/education-unit-service.mjs:4:88)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/education/role-date.test.mjs:1:465\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0"
+  },
+  {
+    "file": "tests/golive/handover-complete.test.mjs",
+    "exit": 0,
+    "output": "go-live handover pack check passed (8 runbooks, 5 accountability roles, staged rollout, daily review and 7/30-day PIR templates); real acknowledgement remains external.",
+    "error": ""
+  },
+  {
+    "file": "tests/imports/bad-file.test.mjs",
+    "exit": 0,
+    "output": "dry-run bad-file tests passed (scan, schema, reference, duplicate, row/column error report, zero DB writes)",
+    "error": ""
+  },
+  {
+    "file": "tests/imports/commit-reliability.test.mjs",
+    "exit": 0,
+    "output": "import commit reliability tests passed (crash rollback, duplicate delivery replay, partial error block, append-only compensation)",
+    "error": ""
+  },
+  {
+    "file": "tests/migration/legacy-migration.test.mjs",
+    "exit": 0,
+    "output": "legacy migration test passed (inventory, map/cleanse, dedupe, zero-write dry-run, entity/status/area reconciliation, samples, approval separation, cutover, non-destructive rollback)",
+    "error": ""
+  },
+  {
+    "file": "tests/migration/migration-contract.mjs",
+    "exit": 0,
+    "output": "migration contract check passed (17 controls)",
+    "error": ""
+  },
+  {
+    "file": "tests/observability/alert-drill.test.mjs",
+    "exit": 0,
+    "output": "synthetic alert drill passed (8 alert rules, safe log/trace allowlist, append-only incident events, pending postmortem)",
+    "error": ""
+  },
+  {
+    "file": "tests/operations/restore-evidence.test.mjs",
+    "exit": 0,
+    "output": "isolated restore evidence verification passed (counts, constraints, samples, audit)",
+    "error": ""
+  },
+  {
+    "file": "tests/org/cycle.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at createOrganisation (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/org/org-service.mjs:8:3)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/org/cycle.test.mjs:3:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0"
+  },
+  {
+    "file": "tests/people/people-privacy.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at createPerson (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/people/people-service.mjs:23:3)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/people/people-privacy.test.mjs:10:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0"
+  },
+  {
+    "file": "tests/perf/scale.test.mjs",
+    "exit": 0,
+    "output": "{\"n\":100000,\"pagination\":{\"p50\":0.004896999999999707,\"p95\":0.024957000000000562,\"p99\":0.0851159999999993},\"search\":{\"p50\":2.6007270000000062,\"p95\":5.065794000000011,\"p99\":5.731508999999988},\"exportRowsPerSec\":64849497.28669678,\"heapDeltaBytes\":32248816,\"keysetQueryPlan\":\"PostgreSQL: WHERE (sort_key,id) > ($1,$2) ORDER BY sort_key,id LIMIT $3; index (sort_key,id)\",\"importThroughput\":\"TO RUN against PostgreSQL transaction/queue\"}",
+    "error": ""
+  },
+  {
+    "file": "tests/positions/timeline.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at appendAssignment (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/positions/timeline-service.mjs:7:2)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/positions/timeline.test.mjs:4:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0"
+  },
+  {
+    "file": "tests/public/directory-privacy.test.mjs",
+    "exit": 0,
+    "output": "public directory privacy tests passed (allow-list projection, effective holder, cache, rate limit)",
+    "error": ""
+  },
+  {
+    "file": "tests/qa/coverage-evidence.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: QA-FUNC-01 failed: file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at createEducationUnit (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/education/education-unit-service.mjs:4:88)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/education/role-date.test.mjs:1:465\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0\n\n\n1 !== 0\n\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/qa/coverage-evidence.test.mjs:17:14\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n   "
+  },
+  {
+    "file": "tests/registrar/approved-mapping.test.mjs",
+    "exit": 0,
+    "output": "approved mapping test passed (core-only intake, duplicate/window blocking, status and audit append-only)",
+    "error": ""
+  },
+  {
+    "file": "tests/release/release-rehearsal.test.mjs",
+    "exit": 0,
+    "output": "PASS release smoke rehearsal :: server authorization smoke :: tests/auth/negative-access.test.mjs :: evidence=exit-0\nPASS release smoke rehearsal :: public projection privacy smoke :: tests/public/directory-privacy.test.mjs :: evidence=exit-0\nPASS release smoke rehearsal :: synthetic migration threshold smoke :: tests/migration/legacy-migration.test.mjs :: evidence=exit-0\nrelease rehearsal passed (preflight, backup/migration/flag gates, smoke evidence, rollback plan); production decision remains NO_GO.",
+    "error": ""
+  },
+  {
+    "file": "tests/security/threat-model-completeness.test.mjs",
+    "exit": 0,
+    "output": "threat-model completeness test passed (all required threats covered; no unsupported Critical/High resolution)",
+    "error": ""
+  },
+  {
+    "file": "tests/seed/seed-contract.mjs",
+    "exit": 0,
+    "output": "synthetic seed contract passed (11 controls)",
+    "error": ""
+  },
+  {
+    "file": "tests/seed/seed-target.test.mjs",
+    "exit": 0,
+    "output": "seed target guard passed (1 allowed, 3 denied)",
+    "error": ""
+  },
+  {
+    "file": "tests/status/rollback.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at appendStatus (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/status/status-service.mjs:6:81)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/status/rollback.test.mjs:1:629\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0"
+  },
+  {
+    "file": "tests/training/exercise-pass.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: EX-DATA-01 failed: file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at createPerson (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/people/people-service.mjs:23:3)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/people/people-privacy.test.mjs:10:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0\n\n\n1 !== 0\n\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/training/exercise-pass.test.mjs:13:10\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:"
+  },
+  {
+    "file": "tests/uat/scripted-staging-uat.test.mjs",
+    "exit": 1,
+    "output": "",
+    "error": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: acting-appointed and secretary change failed: file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22\n  if (!actor.active || !actor.sessionExpiresAt || new Date(actor.sessionExpiresAt) <= now) throw new AuthError(401, 'SESSION_EXPIRED');\n                                                                                                 ^\n\nAuthError: Authentication required.\n    at authorize (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/auth/authorize.mjs:22:98)\n    at appendAssignment (file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/src/server/positions/timeline-service.mjs:7:2)\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/positions/timeline.test.mjs:4:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)\n    at async node:internal/modules/esm/loader:643:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n  status: 401,\n  code: 'SESSION_EXPIRED'\n}\n\nNode.js v24.19.0\n\n\n1 !== 0\n\n    at file:///workspace/scratch/f495524bbd5c/lm_source/modules/Sangha_Data_Platform_GoLive_PIR_Baseline/tests/uat/scripted-staging-uat.test.mjs:28:10\n    at ModuleJob.run (node:internal/modules/esm/modu"
+  }
+]

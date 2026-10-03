@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';import{TimelineStore,appendAssignment,effectiveAssignments,secretaryLinks}from'../../src/server/positions/timeline-service.mjs';
+const actor={userId:'timeline-editor',active:true,sessionExpiresAt:'2026-10-01T00:00:00Z',grants:[{role:'DATA_STEWARD',action:'position:timeline:write',scopePath:'/SYN-GLOBAL',validFrom:'2026-01-01T00:00:00Z'}]};const resource={id:'position',type:'Position',scopePath:'/SYN-GLOBAL/SYN-EDU-01'};const s=new TimelineStore();
+const base={positionId:'SYN-POS-1',personId:'SYN-PERSON-1',documentRecordId:'SYN-DOC-1',effectiveFrom:'2026-01-01T00:00:00Z',effectiveTo:'2026-03-01T00:00:00Z'};
+await appendAssignment({store:s,actor,resource,input:{...base,id:'acting',state:'ACTING',appointmentOrder:'SYN-ACT-01'}});
+await appendAssignment({store:s,actor,resource,input:{...base,id:'appointed',personId:'SYN-PERSON-2',state:'APPOINTED',effectiveFrom:'2026-03-01T00:00:00Z',effectiveTo:'2026-06-01T00:00:00Z',appointmentOrder:'SYN-APP-01'}});
+await appendAssignment({store:s,actor,resource,input:{...base,id:'secretary',positionId:'SYN-POS-SEC',personId:'SYN-PERSON-3',state:'APPOINTED',effectiveFrom:'2026-03-01T00:00:00Z',effectiveTo:'2026-06-01T00:00:00Z',secretaryForAssignmentId:'appointed'}});
+await assert.rejects(()=>appendAssignment({store:s,actor,resource,input:{...base,id:'overlap',state:'APPOINTED',effectiveFrom:'2026-02-01T00:00:00Z'}}),/OVERLAPPING_ASSIGNMENT/);
+assert.equal(effectiveAssignments(s,'2026-04-01').length,2);assert.equal(secretaryLinks(s,'appointed').length,1);assert.equal(s.events.length,3);console.log('position timeline tests passed (acting/appointed, effective dates, overlap, secretary link, append events)');

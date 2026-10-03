@@ -1,0 +1,28 @@
+name: release-rehearsal
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'prisma/**'
+      - 'package.json'
+      - '.github/workflows/release-rehearsal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rehearsal:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+      - run: node --version
+      - run: npm run test:release:rehearsal
+      - run: npm run test:qa:coverage
+      - run: npm run test:migration:legacy
+      - run: npm run test:uat:script

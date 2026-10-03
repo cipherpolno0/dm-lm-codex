@@ -1,0 +1,465 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Confirmed: all example identifiers and fixtures used with this schema are synthetic.
+enum RoleCode { PRODUCT_OWNER DATA_STEWARD EDUCATION_DIRECTORY_MANAGER EXAM_OPERATIONS_OFFICER APPLICANT_SERVICES_OFFICER SYSTEM_ADMINISTRATOR SECURITY_REVIEWER LEGAL_COMPLIANCE_REVIEWER }
+enum ScopeType { GLOBAL GEOGRAPHIC ORGANISATION SELF }
+enum OrganisationType { SANGHA_UNIT EDUCATION_UNIT EXAMINATION_UNIT SUPPORT_UNIT }
+enum LifecycleState { PROPOSED ACTIVE SUSPENDED RETIRED ARCHIVED }
+enum PositionState { VACANT ACTIVE ENDED REVOKED }
+enum ApplicationState { DRAFT SUBMITTED UNDER_REVIEW APPROVED REJECTED WITHDRAWN }
+enum DocumentState { PENDING VERIFIED REJECTED REVOKED }
+enum ImportState { UPLOADED VALIDATING READY IMPORTING COMPLETED COMPLETED_WITH_ERRORS FAILED }
+enum ExamResultState { PENDING PASSED FAILED ABSENT WITHHELD }
+enum EventOutcome { ALLOWED DENIED SUCCESS FAILURE }
+enum LegalEvidenceState { TO_VERIFY VERIFIED SUPERSEDED }
+enum ApprovalState { REQUESTED APPROVED REJECTED WITHDRAWN }
+
+model User {
+  id              String          @id @default(uuid()) @db.Uuid
+  subjectRef      String          @unique @db.VarChar(128) // IdP subject; never an email address
+  active          Boolean         @default(true)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  grants          UserGrant[]
+  person          Person?
+  auditEvents     AuditEvent[]    @relation("AuditActor")
+  approvals       ApprovalDecision[] @relation("ApprovalActor")
+  imports         ImportJob[]     @relation("ImportRequestedBy")
+}
+
+model Role {
+  id              String          @id @default(uuid()) @db.Uuid
+  code            RoleCode        @unique
+  displayName     String          @db.VarChar(160)
+  grants          UserGrant[]
+  permissions     RolePermission[]
+}
+
+model Permission {
+  id              String          @id @default(uuid()) @db.Uuid
+  action          String          @unique @db.VarChar(160)
+  description     String?         @db.Text
+  roles           RolePermission[]
+}
+
+model RolePermission {
+  roleId          String          @db.Uuid
+  permissionId    String          @db.Uuid
+  role            Role            @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  permission      Permission      @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+  @@id([roleId, permissionId])
+}
+
+// A grant is evaluated on the server with action, target and workflow state. It never grants by UI visibility.
+model UserGrant {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String          @db.Uuid
+  roleId          String          @db.Uuid
+  scopeId         String          @db.Uuid
+  validFrom       DateTime        @default(now()) @db.Timestamptz(6)
+  validUntil      DateTime?       @db.Timestamptz(6)
+  grantedByUserId String?         @db.Uuid
+  revokedAt       DateTime?       @db.Timestamptz(6)
+  revokeReason    String?         @db.Text
+  user            User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role            Role            @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  scope           Scope           @relation(fields: [scopeId], references: [id], onDelete: Restrict)
+  @@index([userId, validUntil, revokedAt])
+  @@index([scopeId, roleId])
+}
+
+model Scope {
+  id              String          @id @default(uuid()) @db.Uuid
+  type            ScopeType
+  code            String          @unique @db.VarChar(120)
+  pathKey         String          @unique @db.VarChar(600) // e.g. /GEO/SYN-01; prefix match is server-side policy input
+  parentId        String?         @db.Uuid
+  organisationId  String?         @unique @db.Uuid
+  parent          Scope?          @relation("ScopeHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children        Scope[]         @relation("ScopeHierarchy")
+  organisation    Organisation?   @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  grants          UserGrant[]
+  @@index([parentId])
+  @@index([type, pathKey])
+}
+
+model Person {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String?         @unique @db.Uuid
+  publicLabel     String          @db.VarChar(240) // synthetic/non-sensitive projection only
+  isSynthetic     Boolean         @default(true)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  privateProfiles PersonPrivate[]
+  contacts        PersonContact[]
+  assignments     PositionAssignment[]
+  candidates      Candidate[]
+  @@index([isSynthetic])
+}
+
+model PersonPrivate {
+  id              String          @id @default(uuid()) @db.Uuid
+  personId        String          @db.Uuid
+  versionNo       Int
+  legalNameCiphertext String?     @db.Text
+  birthDate       DateTime?       @db.Date
+  identifierHash  String?         @db.VarChar(128) // one-way HMAC/hash, no raw identifier
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  person          Person          @relation(fields: [personId], references: [id], onDelete: Restrict)
+  @@unique([personId, versionNo])
+  @@index([identifierHash])
+  @@index([personId, createdAt(sort: Desc)])
+}
+
+model PersonContact {
+  id              String          @id @default(uuid()) @db.Uuid
+  personId        String          @db.Uuid
+  channel         String          @db.VarChar(32)
+  valueCiphertext String          @db.Text
+  verifiedAt      DateTime?       @db.Timestamptz(6)
+  retiredAt       DateTime?       @db.Timestamptz(6)
+  person          Person          @relation(fields: [personId], references: [id], onDelete: Restrict)
+  @@index([personId, channel, retiredAt])
+}
+
+model Organisation {
+  id              String          @id @default(uuid()) @db.Uuid
+  code            String          @unique @db.VarChar(120)
+  type            OrganisationType
+  displayName     String          @db.VarChar(240)
+  parentId        String?         @db.Uuid
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  parent          Organisation?   @relation("OrganisationHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children        Organisation[]  @relation("OrganisationHierarchy")
+  scope           Scope?
+  statusEvents    OrganisationStatusEvent[]
+  positions       Position[]
+  educationUnits  EducationUnit[]
+  examSites       ExamSite[]
+  @@index([parentId, type])
+}
+
+// Current organisational state is derived from the latest valid event; do not add a mutable status column.
+model OrganisationStatusEvent {
+  id              String          @id @default(uuid()) @db.Uuid
+  organisationId  String          @db.Uuid
+  state           LifecycleState
+  effectiveAt     DateTime        @db.Timestamptz(6)
+  reason          String?         @db.Text
+  recordedByUserId String?        @db.Uuid
+  recordedAt      DateTime        @default(now()) @db.Timestamptz(6)
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  @@unique([organisationId, effectiveAt, id])
+  @@index([organisationId, effectiveAt(sort: Desc)])
+}
+
+model Position {
+  id              String          @id @default(uuid()) @db.Uuid
+  organisationId  String          @db.Uuid
+  code            String          @db.VarChar(120)
+  title           String          @db.VarChar(240)
+  positionClass   String          @db.VarChar(80)
+  activeFrom      DateTime        @default(now()) @db.Timestamptz(6)
+  retiredAt       DateTime?       @db.Timestamptz(6)
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  assignments     PositionAssignment[]
+  @@unique([organisationId, code])
+  @@index([organisationId, retiredAt])
+}
+
+// Person and position are deliberately separate. The current holder is derived from events/valid dates.
+model PositionAssignment {
+  id              String          @id @default(uuid()) @db.Uuid
+  positionId      String          @db.Uuid
+  personId        String          @db.Uuid
+  validFrom       DateTime        @db.Timestamptz(6)
+  validUntil      DateTime?       @db.Timestamptz(6)
+  appointmentRef  String?         @db.VarChar(180)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  position        Position        @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  person          Person          @relation(fields: [personId], references: [id], onDelete: Restrict)
+  events          PositionAssignmentEvent[]
+  @@index([positionId, validUntil])
+  @@index([personId, validUntil])
+}
+
+model PositionAssignmentEvent {
+  id              String          @id @default(uuid()) @db.Uuid
+  assignmentId    String          @db.Uuid
+  state           PositionState
+  effectiveAt     DateTime        @db.Timestamptz(6)
+  reason          String?         @db.Text
+  approvalId      String?         @db.Uuid
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  assignment      PositionAssignment @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  approval        ApprovalDecision? @relation(fields: [approvalId], references: [id], onDelete: Restrict)
+  @@unique([assignmentId, effectiveAt, id])
+  @@index([assignmentId, effectiveAt(sort: Desc)])
+}
+
+model EducationUnit {
+  id              String          @id @default(uuid()) @db.Uuid
+  organisationId  String          @db.Uuid
+  code            String          @unique @db.VarChar(120)
+  displayName     String          @db.VarChar(240)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  candidates      Candidate[]
+  @@index([organisationId])
+}
+
+model LegalSource {
+  id              String          @id @default(uuid()) @db.Uuid
+  sourceTitle     String          @db.VarChar(500)
+  sourceSection   String?         @db.VarChar(500)
+  effectiveFrom   DateTime?       @db.Date
+  effectiveUntil  DateTime?       @db.Date
+  evidenceState   LegalEvidenceState @default(TO_VERIFY)
+  evidenceUri     String?         @db.Text
+  reviewerRole    String?         @db.VarChar(160)
+  reviewedAt      DateTime?       @db.Timestamptz(6)
+  requirements    LegalRequirement[]
+  @@index([evidenceState, effectiveFrom])
+}
+
+model LegalRequirement {
+  id              String          @id @default(uuid()) @db.Uuid
+  legalSourceId   String          @db.Uuid
+  domain          String          @db.VarChar(120)
+  ruleKey         String          @unique @db.VarChar(160)
+  interpretation  String          @db.Text
+  evidenceState   LegalEvidenceState @default(TO_VERIFY)
+  source          LegalSource     @relation(fields: [legalSourceId], references: [id], onDelete: Restrict)
+  approvals       ApprovalDecision[]
+  @@index([legalSourceId, evidenceState])
+}
+
+model ApprovalDecision {
+  id              String          @id @default(uuid()) @db.Uuid
+  requirementId   String?         @db.Uuid
+  requestedByUserId String?       @db.Uuid
+  decidedByUserId String?         @db.Uuid
+  state           ApprovalState   @default(REQUESTED)
+  subjectType     String          @db.VarChar(120)
+  subjectId       String          @db.Uuid
+  decisionReason  String?         @db.Text
+  requestedAt     DateTime        @default(now()) @db.Timestamptz(6)
+  decidedAt       DateTime?       @db.Timestamptz(6)
+  requirement     LegalRequirement? @relation(fields: [requirementId], references: [id], onDelete: Restrict)
+  decider         User?           @relation("ApprovalActor", fields: [decidedByUserId], references: [id], onDelete: Restrict)
+  assignmentEvents PositionAssignmentEvent[]
+  applicationEvents ApplicationStatusEvent[]
+  @@index([subjectType, subjectId, state])
+}
+
+model ExamCycle {
+  id              String          @id @default(uuid()) @db.Uuid
+  code            String          @unique @db.VarChar(120)
+  label           String          @db.VarChar(240)
+  opensAt         DateTime        @db.Timestamptz(6)
+  closesAt        DateTime        @db.Timestamptz(6)
+  sessions        ExamSession[]
+  @@index([opensAt, closesAt])
+}
+
+model ExamSession {
+  id              String          @id @default(uuid()) @db.Uuid
+  examCycleId     String          @db.Uuid
+  code            String          @unique @db.VarChar(120)
+  label           String          @db.VarChar(240)
+  startsAt        DateTime        @db.Timestamptz(6)
+  endsAt          DateTime        @db.Timestamptz(6)
+  cycle           ExamCycle       @relation(fields: [examCycleId], references: [id], onDelete: Restrict)
+  sites           ExamSite[]
+  applications    Application[]
+  @@index([examCycleId, startsAt])
+}
+
+model ExamSite {
+  id              String          @id @default(uuid()) @db.Uuid
+  examSessionId   String          @db.Uuid
+  organisationId  String          @db.Uuid
+  code            String          @db.VarChar(120)
+  label           String          @db.VarChar(240)
+  capacity        Int
+  session         ExamSession     @relation(fields: [examSessionId], references: [id], onDelete: Restrict)
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+  applications    Application[]
+  @@unique([examSessionId, code])
+  @@index([organisationId, examSessionId])
+}
+
+model Candidate {
+  id              String          @id @default(uuid()) @db.Uuid
+  personId        String          @db.Uuid
+  educationUnitId String?         @db.Uuid
+  candidateNo     String          @unique @db.VarChar(120)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  person          Person          @relation(fields: [personId], references: [id], onDelete: Restrict)
+  educationUnit   EducationUnit?  @relation(fields: [educationUnitId], references: [id], onDelete: Restrict)
+  applications    Application[]
+  @@index([personId])
+  @@index([educationUnitId])
+}
+
+model Application {
+  id              String          @id @default(uuid()) @db.Uuid
+  candidateId     String          @db.Uuid
+  examSessionId   String          @db.Uuid
+  examSiteId      String?         @db.Uuid
+  applicationNo   String          @unique @db.VarChar(120)
+  submittedAt     DateTime?       @db.Timestamptz(6)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  candidate       Candidate       @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  session         ExamSession     @relation(fields: [examSessionId], references: [id], onDelete: Restrict)
+  examSite        ExamSite?       @relation(fields: [examSiteId], references: [id], onDelete: Restrict)
+  statusEvents    ApplicationStatusEvent[]
+  documents       ApplicationDocument[]
+  results         ExamResult[]
+  @@unique([candidateId, examSessionId])
+  @@index([examSessionId, examSiteId])
+}
+
+model ApplicationStatusEvent {
+  id              String          @id @default(uuid()) @db.Uuid
+  applicationId   String          @db.Uuid
+  state           ApplicationState
+  effectiveAt     DateTime        @db.Timestamptz(6)
+  reason          String?         @db.Text
+  approvalId      String?         @db.Uuid
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  application     Application     @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  approval        ApprovalDecision? @relation(fields: [approvalId], references: [id], onDelete: Restrict)
+  @@unique([applicationId, effectiveAt, id])
+  @@index([applicationId, effectiveAt(sort: Desc)])
+}
+
+model ExamResult {
+  id              String          @id @default(uuid()) @db.Uuid
+  applicationId   String          @db.Uuid
+  subjectCode     String          @db.VarChar(120)
+  score           Decimal?        @db.Decimal(7, 2)
+  maximumScore    Decimal         @db.Decimal(7, 2)
+  state           ExamResultState @default(PENDING)
+  announcedAt     DateTime?       @db.Timestamptz(6)
+  application     Application     @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  @@unique([applicationId, subjectCode])
+  @@index([state, announcedAt])
+}
+
+model StoredObject {
+  id              String          @id @default(uuid()) @db.Uuid
+  storageKey      String          @unique @db.VarChar(900)
+  checksumSha256  String          @db.VarChar(128)
+  contentType     String          @db.VarChar(160)
+  byteSize        BigInt
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  documentVersions DocumentVersion[]
+  importJobs      ImportJob[]
+}
+
+model DocumentRecord {
+  id              String          @id @default(uuid()) @db.Uuid
+  subjectType     String          @db.VarChar(120)
+  subjectId       String          @db.Uuid
+  documentType    String          @db.VarChar(120)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  versions        DocumentVersion[]
+  applicationLinks ApplicationDocument[]
+  @@index([subjectType, subjectId])
+}
+
+// A correction creates a later version; old object metadata is retained until approved retention disposition.
+model DocumentVersion {
+  id              String          @id @default(uuid()) @db.Uuid
+  documentRecordId String         @db.Uuid
+  storedObjectId  String          @db.Uuid
+  versionNo       Int
+  state           DocumentState   @default(PENDING)
+  reason          String?         @db.Text
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  record          DocumentRecord  @relation(fields: [documentRecordId], references: [id], onDelete: Restrict)
+  object          StoredObject    @relation(fields: [storedObjectId], references: [id], onDelete: Restrict)
+  @@unique([documentRecordId, versionNo])
+  @@index([storedObjectId])
+}
+
+model ApplicationDocument {
+  id              String          @id @default(uuid()) @db.Uuid
+  applicationId   String          @db.Uuid
+  documentRecordId String         @db.Uuid
+  documentKind    String          @db.VarChar(120)
+  linkedAt        DateTime        @default(now()) @db.Timestamptz(6)
+  application     Application     @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  record          DocumentRecord  @relation(fields: [documentRecordId], references: [id], onDelete: Restrict)
+  @@unique([applicationId, documentKind, documentRecordId])
+  @@index([documentRecordId])
+}
+
+model ImportJob {
+  id              String          @id @default(uuid()) @db.Uuid
+  requestedByUserId String?       @db.Uuid
+  sourceObjectId  String          @db.Uuid
+  entityType      String          @db.VarChar(120)
+  state           ImportState     @default(UPLOADED)
+  idempotencyKey  String          @unique @db.VarChar(160)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  startedAt       DateTime?       @db.Timestamptz(6)
+  completedAt     DateTime?       @db.Timestamptz(6)
+  requestedBy     User?           @relation("ImportRequestedBy", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  sourceObject    StoredObject    @relation(fields: [sourceObjectId], references: [id], onDelete: Restrict)
+  rows            ImportRow[]
+  @@index([state, createdAt])
+}
+
+model ImportRow {
+  id              String          @id @default(uuid()) @db.Uuid
+  importJobId     String          @db.Uuid
+  rowNo           Int
+  state           ImportState     @default(UPLOADED)
+  errorCode       String?         @db.VarChar(120)
+  errorDetail     String?         @db.Text
+  sourceSnapshot  Json
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  job             ImportJob       @relation(fields: [importJobId], references: [id], onDelete: Restrict)
+  @@unique([importJobId, rowNo])
+  @@index([importJobId, state])
+}
+
+// Audit and outbox are append-only. Mutating code must write business/event/audit/outbox together in one transaction.
+model AuditEvent {
+  id              String          @id @default(uuid()) @db.Uuid
+  actorUserId     String?         @db.Uuid
+  action          String          @db.VarChar(160)
+  outcome         EventOutcome
+  entityType      String          @db.VarChar(120)
+  entityId        String          @db.Uuid
+  requestId       String          @db.VarChar(160)
+  scopePath       String?         @db.VarChar(600)
+  occurredAt      DateTime        @default(now()) @db.Timestamptz(6)
+  metadata        Json?
+  actor           User?           @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  @@index([entityType, entityId, occurredAt(sort: Desc)])
+  @@index([actorUserId, occurredAt(sort: Desc)])
+  @@index([requestId])
+}
+
+model OutboxEvent {
+  id              String          @id @default(uuid()) @db.Uuid
+  aggregateType   String          @db.VarChar(120)
+  aggregateId     String          @db.Uuid
+  eventType       String          @db.VarChar(160)
+  payload         Json
+  occurredAt      DateTime        @default(now()) @db.Timestamptz(6)
+  publishedAt     DateTime?       @db.Timestamptz(6)
+  attempts        Int             @default(0)
+  idempotencyKey  String          @unique @db.VarChar(160)
+  @@index([publishedAt, occurredAt])
+  @@index([aggregateType, aggregateId, occurredAt])
+}

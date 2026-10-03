@@ -1,0 +1,6 @@
+import { performance } from 'node:perf_hooks';
+const percentile=(a,p)=>a.slice().sort((x,y)=>x-y)[Math.ceil(a.length*p)-1]??0;
+export function synthetic(n){return Array.from({length:n},(_,i)=>({id:`SYN-${String(i).padStart(7,'0')}`,name:`Synthetic Office ${i}`,type:i%2?'OFFICE':'SCHOOL'}));}
+export function keyset(rows,after,size){const start=after?rows.findIndex(x=>x.id===after)+1:0;return rows.slice(start,start+size);}
+export function measure(fn,runs=50){const xs=[];for(let i=0;i<runs;i++){const t=performance.now();fn(i);xs.push(performance.now()-t);}return {p50:percentile(xs,.5),p95:percentile(xs,.95),p99:percentile(xs,.99)};}
+export function runScale(n=100000){const before=process.memoryUsage().heapUsed;const rows=synthetic(n);const pagination=measure(i=>keyset(rows,`SYN-${String(i*10).padStart(7,'0')}`,25));const search=measure(i=>rows.filter(x=>x.name.includes(String(i%10))).slice(0,25));const t=performance.now();let exported=0;for(const r of rows){exported+=r.id.length+r.name.length;}const exportMs=performance.now()-t;return {n,pagination,search,exportRowsPerSec:n/(exportMs/1000),heapDeltaBytes:process.memoryUsage().heapUsed-before,keysetQueryPlan:'PostgreSQL: WHERE (sort_key,id) > ($1,$2) ORDER BY sort_key,id LIMIT $3; index (sort_key,id)',importThroughput:'TO RUN against PostgreSQL transaction/queue'};}
